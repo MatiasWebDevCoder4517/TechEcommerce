@@ -11,8 +11,8 @@ urlpatterns = [
     path('submit_review/<int:product_id>/',
          views.submit_review, name='submit_review'),
 
-    path("like/<uuid:id>/", views.liked_product, name="like-product"),
-    path("dislike/<uuid:id>/", views.disliked_product, name="dislike-product"),
+    path("like/<int:id>/", views.liked_product, name="like-product"),
+    path("dislike/<int:id>/", views.disliked_product, name="dislike-product"),
 
 ]
 

@@ -126,46 +126,104 @@ def submit_review(request, product_id):
 ## TESTING LIKE / UNLIKE FUNCTIONALITY ##
 @login_required
 def liked_product(request, id):
+    print(request.user)
     user = request.user
-    Likes = False
+
     if request.method == "POST":
         product_id = request.POST['product_id']
-        get_product = get_object_or_404(Like, id=product_id)
-        if user in get_product.likes.all():
-            get_product.likes.remove(user)
-            Likes = False
-        else:
-            get_product.likes.add(user)
-            Likes = True
+        get_product = get_object_or_404(Product, id=product_id)
+        if get_product:
+            like = Like.objects.filter(product=get_product)
+            # likes exist for this product
+            if like:
+                print('like exist: ', like)
+                print('checking if user is in this list of likes...')
+                if user.userprofile in like[0].likes.all():
+                    print('USER HAS ALREADY LIKED PRODUCT')
+                    data = {
+                        # "liked": like[0],
+                        "likes_count": like[0].likes.all().count()
+                    }
+                    return JsonResponse(data, safe=False)
+                else:
+                    print('user has not liked product. will like now')
+                    like[0].likes.add(user.userprofile)
+                    like[0].save()
+                    print(f'new likes like: {like[0].likes.all()}')
+                    data = {
+                        # "liked": like[0],
+                        "likes_count": like[0].likes.all().count()
+                    }
+                    return JsonResponse(data, safe=False)
+                    ''' return redirect(reverse("product_detail", args=[str(id)])) '''
+            else:  # first like
+                print('like does not exist for this item')
+                new_like = Like.objects.create(product=get_product)
+                new_like.likes.add(user.userprofile)
+                new_like.save()
+                print(new_like.likes.all())
+                data = {
+                    # "liked": new_like,
+                    "likes_count": get_product.likes.all().count()
+                }
+                return JsonResponse(data, safe=False)
+        # if user in get_product.likes.all():
+        #     get_product.likes.remove(user)
+        #     Likes = False
+        # else:
+        #     get_product.likes.add(user)
+        #     Likes = True
         data = {
-            "liked": Likes,
-            "likes_count": get_product.likes.all().count()
+            "msg": "product does not exist"
+            # "liked": Likes,
+            # "likes_count": get_product.likes.all().count()
         }
-        return JsonResponse(data, safe=False)
-    return redirect(reverse("product_detail", args=[str(id)]))
+        ''' return JsonResponse(data, safe=False) '''
+        return redirect(reverse("product_detail", args=[str(id)]))
 
 
 @login_required
 def disliked_product(request, id):
     user = request.user
-    Dislikes = False
+
     if request.method == "POST":
         product_id = request.POST['product_id']
-        print("printing ajax id", product_id)
-        get_product = get_object_or_404(Like, id=product_id)
-        if user in get_product.dislikes.all():
-            get_product.dislikes.remove(user)
-            Dislikes = False
-        else:
-            if user in get_product.likes.all():
-                get_product.likes.remove(user)
-            get_product.dislikes.add(user)
-            get_product.save()
-            Dislikes = True
-        data = {
-            "disliked": Dislikes,
-            'dislike_count': get_product.dislikes.all().count()
-        }
-        return JsonResponse(data, safe=False)
+        get_product = get_object_or_404(Product, id=product_id)
+        if get_product:
+            dislike = Like.objects.filter(product=get_product)
+        # dislikes exist for this product
+        if dislike:
+            print('dislike exist: ', dislike)
+            print('checking if user is in this list of dislikes...')
+            if user.userprofile in dislike[0].likes.all():
+                print('USER HAS ALREADY DISLIKED PRODUCT')
+                data = {
+                    # "disliked": dislike[0],
+                    "dislikes_count": dislike[0].dislikes.all().count()
+                }
+                return JsonResponse(data, safe=False)
+            else:
+                print('user has not disliked product. will dislike now')
+                dislike[0].dislikes.add(user.userprofile)
+                dislike[0].save()
+                print(f'new dislikes like: {dislike[0].likes.all()}')
+                data = {
+                    # "disliked": dislike[0],
+                    "dislikes_count": dislike[0].dislikes.all().count()
+                }
+                return JsonResponse(data, safe=False)
+                ''' return redirect(reverse("product_detail", args=[str(id)])) '''
+        else:  # first dislike
+            print('dislike does not exist for this item')
+            new_dislike = Like.objects.create(product=get_product)
+            new_dislike.dislikes.add(user.userprofile)
+            new_dislike.save()
+            print(new_dislike.likes.all())
+            data = {
+                # "disliked": new_dislike,
+                "dislikes_count": get_product.dislikes.all().count()
+            }
+            return JsonResponse(data, safe=False)
+
     return redirect(reverse("product_detail", args=[str(id)]))
 ## -------------------------------------------------------------------------------------------- ##

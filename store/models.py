@@ -114,12 +114,11 @@ class ProductGallery(models.Model):
 
 
 ## TESTING LIKE / UNLIKE MODEL ##
-
 class Like(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     uploaded = models.DateTimeField(auto_now_add=True)
-    likes = models.ManyToManyField(UserProfile, related_name="product_loved")
+    likes = models.ManyToManyField(UserProfile, related_name="product_liked")
     dislikes = models.ManyToManyField(
         UserProfile, related_name="product_disliked")
 
