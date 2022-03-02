@@ -130,6 +130,4 @@ class Like(models.Model):
 
     def num_dislikes(self):
         return self.dislikes.count()
-
-
 ## ------------------------------------------------------- ##
